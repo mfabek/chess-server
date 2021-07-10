@@ -21,6 +21,8 @@ public class GameEntity {
 
     private Boolean finished;
 
+    private String turn;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "game_id", referencedColumnName = "id")
     private List<ChessBoardEntity> boards = new ArrayList<>();

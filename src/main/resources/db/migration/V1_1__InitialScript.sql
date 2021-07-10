@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `chess`.`game` (
 CREATE TABLE IF NOT EXISTS `chess`.`board` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `board` VARCHAR(255) NOT NULL,
+    `turn` VARCHAR(255),
     `game_id` INT NOT NULL,
     PRIMARY KEY (`id`),
     INDEX `fk_game_idx` (`game_id` ASC) VISIBLE,

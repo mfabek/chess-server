@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class GetChessBoardResponse {
     private String board;
+    private String move;
 }

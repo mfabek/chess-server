@@ -13,4 +13,6 @@ public class ChessBoardEntity {
     private Long id;
 
     private String board;
+
+    private String move;
 }

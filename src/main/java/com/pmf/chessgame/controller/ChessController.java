@@ -35,7 +35,7 @@ public class ChessController {
     @PostMapping("getBoard")
     public String getBoard(@RequestBody String name) {
         Optional<GameEntity> game = gameEntityRepository.findByName(name);
-        return game.map(gameEntity -> gameEntity.getBoards().get(gameEntity.getBoards().size() - 1).getBoard()).orElse(null);
+        return game.map(gameEntity -> gameEntity.getBoards().get(gameEntity.getBoards().size() - 1).getMove()).orElse(null);
     }
 
     @PostMapping("join")
@@ -56,6 +56,7 @@ public class ChessController {
             ChessBoardEntity chessBoardEntity = new ChessBoardEntity();
             boards.add(chessBoardEntity);
             chessBoardEntity.setBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+            chessBoardEntity.setMove("");
             GameEntity gameEntity = new GameEntity();
             gameEntity.setPlayerCount(1L);
             gameEntity.setName(name);
@@ -74,11 +75,19 @@ public class ChessController {
             GameEntity gameEntity = game.get();
             ChessBoardEntity chessBoardEntity = new ChessBoardEntity();
 
+            if (gameEntity.getBoards().get(gameEntity.getBoards().size() - 1).getBoard().equals(request.getBoard())){
+                //Drugo spremanje iste tablice
+                //Zanemari
+                return;
+            }
+
             FieldType[][] temp = getBoardLook(request.getBoard());
             System.out.println("Bijeli kralj u sahu: " + isWhiteKingCheck(temp));
             System.out.println("Crni kralj u sahu: " + isBlackKingCheck(temp));
 
             chessBoardEntity.setBoard(request.getBoard());
+            chessBoardEntity.setMove(request.getMove());
+            System.out.println("move: "+ request.getMove());
             List<ChessBoardEntity> list = gameEntity.getBoards();
             list.add(chessBoardEntity);
             gameEntity.setBoards(list);

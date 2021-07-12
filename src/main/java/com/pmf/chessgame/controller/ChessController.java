@@ -5,6 +5,7 @@ import com.pmf.chessgame.storage.model.entity.GameEntity;
 import com.pmf.chessgame.storage.model.request.MovePieceRequest;
 import com.pmf.chessgame.storage.repository.GameEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -81,13 +82,22 @@ public class ChessController {
                 return;
             }
 
+            //Test
             FieldType[][] temp = getBoardLook(request.getBoard());
-            System.out.println("Bijeli kralj u sahu: " + isWhiteKingCheck(temp));
-            System.out.println("Crni kralj u sahu: " + isBlackKingCheck(temp));
+            if (isWhiteKingCheck(temp)){
+                System.out.println("SAH na bijelom");
+                if (isWhiteKingCheckmate(temp))
+                    System.out.println("SAHMAT");
+            }
+            if (isBlackKingCheck(temp)){
+                System.out.println("SAH na crnom");
+                if (isBlackKingCheckmate(temp))
+                    System.out.println("SAHMAT");
+            }
 
             chessBoardEntity.setBoard(request.getBoard());
             chessBoardEntity.setMove(request.getMove());
-            System.out.println("move: "+ request.getMove());
+
             List<ChessBoardEntity> list = gameEntity.getBoards();
             list.add(chessBoardEntity);
             gameEntity.setBoards(list);
@@ -97,7 +107,22 @@ public class ChessController {
     public enum FieldType{
         EMPTY, BPAWN, BROOK, BKNIGHT, BBISHOP, BQUEEN, BKING, WPAWN, WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING;
     }
-
+    private List<FieldType> blacks = new ArrayList<>(){{
+        add(FieldType.BBISHOP);
+        add(FieldType.BKING);
+        add(FieldType.BKNIGHT);
+        add(FieldType.BPAWN);
+        add(FieldType.BQUEEN);
+        add(FieldType.BROOK);
+    }};
+    private List<FieldType> whites = new ArrayList<>(){{
+        add(FieldType.WBISHOP);
+        add(FieldType.WKING);
+        add(FieldType.WKNIGHT);
+        add(FieldType.WPAWN);
+        add(FieldType.WROOK);
+        add(FieldType.WQUEEN);
+    }};
     //Vraca matricu koja opisuje stanje ploce
     private FieldType[][] getBoardLook(String s){
         FieldType[][] result = new FieldType[8][8];
@@ -649,4 +674,497 @@ public class ChessController {
         }
         return false;
     }
+    //Vraca listu svih mogucih pozicija na koju se figura na (i,j) moze pomaknut
+    private List<Pair<Integer, Integer>> getMoves(int i, int j, FieldType[][] table){
+        List<Pair<Integer, Integer>> moves = new ArrayList<>();
+        switch (table[i][j]){
+            case EMPTY:
+                break;
+            case WPAWN:
+                if (i == 0)
+                    break;
+                if (table[i-1][j] == FieldType.EMPTY)
+                    moves.add(Pair.of(i-1,j));
+                if (j-1 > 0 && blacks.contains(table[i-1][j-1]))
+                    moves.add(Pair.of(i-1,j-1));
+                if (j < 7 && blacks.contains(table[i-1][j+1]))
+                    moves.add(Pair.of(i-1,j+1));
+                break;
+            case BPAWN:
+                if (i == 7)
+                    break;
+                if (table[i+1][j] == FieldType.EMPTY)
+                    moves.add(Pair.of(i+1,j));
+                if (j-1 > 0 && whites.contains(table[i+1][j-1]))
+                    moves.add(Pair.of(i+1,j-1));
+                if (j < 7 && whites.contains(table[i+1][j+1]))
+                    moves.add(Pair.of(i+1,j+1));
+                break;
+            case WBISHOP:
+                int k = i+1;
+                int l = j+1;
+                while(k < 8 && l < 8){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k++;
+                    l++;
+                }
+                k = i+1;
+                l = j-1;
+                while(k < 8 && l >= 0){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k++;
+                    l--;
+                }
+                k = i-1;
+                l = j+1;
+                while(k >= 0 && l < 8){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k--;
+                    l++;
+                }
+                k = i-1;
+                l = j-1;
+                while(k >= 0 && l >= 0){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k--;
+                    l--;
+                }
+                break;
+            case BBISHOP:
+                k = i+1;
+                l = j+1;
+                while(k < 8 && l < 8){
+                    if (table[k][j] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k++;
+                    l++;
+                }
+                k = i+1;
+                l = j-1;
+                while(k < 8 && l >= 0){
+                    if (table[k][j] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k++;
+                    l--;
+                }
+                k = i-1;
+                l = j+1;
+                while(k >= 0 && l < 8){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k--;
+                    l++;
+                }
+                k = i-1;
+                l = j-1;
+                while(k >= 0 && l >= 0){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k--;
+                    l--;
+                }
+                break;
+            case WKING:
+                for (k = i-1; k <= i+1; k++){
+                    for (l = j-1; l <= j+1; l++){
+                        if (k == i && l == j)
+                            continue;
+                        else if (k > 7 || k < 0 || l > 7 || l < 0)
+                            continue;
+                        else if (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l]))
+                            moves.add(Pair.of(k,l));
+                    }
+                }
+                break;
+            case BKING:
+                for (k = i-1; k <= i+1; k++){
+                    for (l = j-1; l <= j+1; l++){
+                        if (k == i && l == j)
+                            continue;
+                        else if (k > 7 || k < 0 || l > 7 || l < 0)
+                            continue;
+                        else if (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l]))
+                            moves.add(Pair.of(k,l));
+                    }
+                }
+                break;
+            case WKNIGHT:
+                k = i + 1;
+                l = j - 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i + 1;
+                l = j + 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i + 2;
+                l = j + 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i + 2;
+                l = j - 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 1;
+                l = j - 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 1;
+                l = j + 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 2;
+                l = j + 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 2;
+                l = j - 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || blacks.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                break;
+            case BKNIGHT:
+                k = i + 1;
+                l = j - 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i + 1;
+                l = j + 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i + 2;
+                l = j + 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i + 2;
+                l = j - 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 1;
+                l = j - 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 1;
+                l = j + 2;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 2;
+                l = j + 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                k = i - 2;
+                l = j - 1;
+                if (!(k > 7 || k < 0 || l > 7 || l < 0) && (table[k][l] == FieldType.EMPTY || whites.contains(table[k][l])))
+                    moves.add(Pair.of(k,l));
+                break;
+            case WROOK:
+                k = i+1;
+                l = j;
+                while(k < 8){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k++;
+                }
+                k = i-1;
+                while(k >= 0){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k--;
+                }
+                k = i;
+                l = j+1;
+                while(l < 8){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    l++;
+                }
+                l = j-1;
+                while(l >= 0){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (blacks.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    l--;
+                }
+                break;
+            case BROOK:
+                k = i+1;
+                l = j;
+                while(k < 8){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k++;
+                }
+                k = i-1;
+                while(k >= 0){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    k--;
+                }
+                k = i;
+                l = j+1;
+                while(l < 8){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    l++;
+                }
+                l = j-1;
+                while(l >= 0){
+                    if (table[k][l] == FieldType.EMPTY)
+                        moves.add(Pair.of(k,l));
+                    else if (whites.contains(table[k][l])){
+                        moves.add(Pair.of(k,l));
+                        break;
+                    }
+                    else
+                        break;
+                    l--;
+                }
+                break;
+            case WQUEEN:
+                //Ponasa se kao kombinacija kule i lovca
+                table[i][j] = FieldType.WROOK;
+                moves.addAll(getMoves(i,j,table));
+                table[i][j] = FieldType.WBISHOP;
+                moves.addAll(getMoves(i,j,table));
+                table[i][j] = FieldType.WQUEEN;
+                break;
+            case BQUEEN:
+                table[i][j] = FieldType.BROOK;
+                moves.addAll(getMoves(i,j,table));
+                table[i][j] = FieldType.BBISHOP;
+                moves.addAll(getMoves(i,j,table));
+                table[i][j] = FieldType.BQUEEN;
+                break;
+        }
+        return moves;
+    }
+
+    //Provjerava je li se dogodio sah-mat nad bijelim kraljem
+    // Pretpostavlja da je kralj u sahu
+    private boolean isWhiteKingCheckmate(FieldType[][] table){
+        //Bijeli kralj se nalazi na (x,y)
+        int x = 0, y = 0;
+        boolean found = false;
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                if (table[i][j] == FieldType.WKING){
+                    x = i;
+                    y = j;
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+                break;
+        }
+
+        // pogledajmo sve moguce kraljeve poteze
+        List<Pair<Integer, Integer>> moves = getMoves(x, y, table);
+
+        //Prvo provjerimo moze li se kralj pomaknut
+        for (Pair<Integer,Integer> p : moves){
+                var temp = table[p.getFirst()][p.getSecond()];
+                table[p.getFirst()][p.getSecond()] = FieldType.WKING;
+                table[x][y] = FieldType.EMPTY;
+                //Provjeri je li sad sah
+                if (!isWhiteKingCheck(table))
+                    return false;
+                else{
+                    //Vrati kako je bilo
+                    table[p.getFirst()][p.getSecond()] = temp;
+                    table[x][y] = FieldType.WKING;
+                }
+
+        }
+
+        //Moramo provjeriti moze li se neka figura pomaknuti tako da vise nije sah
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                // Trazimo sve bijele figure
+                if (!(table[i][j] == FieldType.EMPTY || blacks.contains(table[i][j])
+                        || table[i][j] == FieldType.WKING)){
+                    moves.clear();
+                    moves = getMoves(i,j,table);
+                    for (Pair<Integer,Integer> p : moves){
+                        var temp = table[p.getFirst()][p.getSecond()];
+                        table[p.getFirst()][p.getSecond()] = table[i][j];
+                        table[i][j] = FieldType.EMPTY;
+                        //Provjeri je li sad sah
+                        if (!isWhiteKingCheck(table)) {
+                            return false;
+                        }
+                        else{
+                            //Vrati kako je bilo
+                            table[i][j] = table[p.getFirst()][p.getSecond()];
+                            table[p.getFirst()][p.getSecond()] = temp;
+                        }
+
+                    }
+                }
+
+            }
+        }
+        return true;
+    }
+
+    //Provjerava je li se dogodio sah-mat nad crnim kraljem
+    // Pretpostavlja da je kralj u sahu
+    private boolean isBlackKingCheckmate(FieldType[][] table){
+        //Bijeli kralj se nalazi na (x,y)
+        int x = 0, y = 0;
+        boolean found = false;
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                if (table[i][j] == FieldType.BKING){
+                    x = i;
+                    y = j;
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+                break;
+        }
+
+        // pogledajmo sve moguce kraljeve poteze
+        List<Pair<Integer, Integer>> moves = getMoves(x, y, table);
+
+        //Prvo provjerimo moze li se kralj pomaknut
+        for (Pair<Integer,Integer> p : moves){
+            var temp = table[p.getFirst()][p.getSecond()];
+            table[p.getFirst()][p.getSecond()] = FieldType.BKING;
+            table[x][y] = FieldType.EMPTY;
+            //Provjeri je li sad sah
+            if (!isWhiteKingCheck(table))
+                return false;
+            else{
+                //Vrati kako je bilo
+                table[p.getFirst()][p.getSecond()] = temp;
+                table[x][y] = FieldType.BKING;
+            }
+
+        }
+
+        //Moramo provjeriti moze li se neka figura pomaknuti tako da vise nije sah
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                // Trazimo sve bijele figure
+                if (!(table[i][j] == FieldType.EMPTY || whites.contains(table[i][j])
+                        || table[i][j] == FieldType.BKING)){
+                    moves.clear();
+                    moves = getMoves(i,j,table);
+                    for (Pair<Integer,Integer> p : moves){
+                        var temp = table[p.getFirst()][p.getSecond()];
+                        table[p.getFirst()][p.getSecond()] = table[i][j];
+                        table[i][j] = FieldType.EMPTY;
+                        //Provjeri je li sad sah
+                        if (!isWhiteKingCheck(table)) {
+                            return false;
+                        }
+                        else{
+                            //Vrati kako je bilo
+                            table[i][j] = table[p.getFirst()][p.getSecond()];
+                            table[p.getFirst()][p.getSecond()] = temp;
+                        }
+
+                    }
+                }
+
+            }
+        }
+        return true;
+    }
+
 }

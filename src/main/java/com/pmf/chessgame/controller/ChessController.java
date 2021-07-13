@@ -60,6 +60,7 @@ public class ChessController {
             gameEntityRepository.delete(gameEntity);
             GameEntity gameEntity1 = new GameEntity();
             gameEntity1.setPlayerCount(2L);
+            gameEntity1.setTurn("w");
             gameEntity1.setName(game.get().getName());
             List<ChessBoardEntity> boards = new ArrayList<>();
             ChessBoardEntity chessBoardEntity = new ChessBoardEntity();
@@ -180,7 +181,7 @@ public class ChessController {
     }};
 
     //Vraca matricu koja opisuje stanje ploce
-    private FieldType[][] getBoardLook(String s) {
+    public FieldType[][] getBoardLook(String s) {
         FieldType[][] result = new FieldType[8][8];
         int i = 0;
         int j = 0;
@@ -255,7 +256,7 @@ public class ChessController {
     }
 
     //Provjera je li bijeli kralj u šahu
-    private boolean isWhiteKingCheck(FieldType[][] table) {
+    public boolean isWhiteKingCheck(FieldType[][] table) {
         //Bijeli kralj se nalazi na (x,y)
         int x = 0, y = 0;
         boolean found = false;
@@ -481,7 +482,7 @@ public class ChessController {
     }
 
     //Provjera je li crni kralj u šahu
-    private boolean isBlackKingCheck(FieldType[][] table) {
+    public boolean isBlackKingCheck(FieldType[][] table) {
         //Crni kralj se nalazi na (x,y)
         int x = 0, y = 0;
         boolean found = false;
@@ -707,6 +708,7 @@ public class ChessController {
     }
 
     //Vraca listu svih mogucih pozicija na koju se figura na (i,j) moze pomaknut
+    // Testira se kroz funkcije za sah i mat
     private List<Pair<Integer, Integer>> getMoves(int i, int j, FieldType[][] table) {
         List<Pair<Integer, Integer>> moves = new ArrayList<>();
         switch (table[i][j]) {
@@ -1049,7 +1051,7 @@ public class ChessController {
 
     //Provjerava je li se dogodio sah-mat nad bijelim kraljem
     // Pretpostavlja da je kralj u sahu
-    private boolean isWhiteKingCheckmate(FieldType[][] table) {
+    public boolean isWhiteKingCheckmate(FieldType[][] table) {
         //Bijeli kralj se nalazi na (x,y)
         int x = 0, y = 0;
         boolean found = false;
@@ -1116,7 +1118,7 @@ public class ChessController {
 
     //Provjerava je li se dogodio sah-mat nad crnim kraljem
     // Pretpostavlja da je kralj u sahu
-    private boolean isBlackKingCheckmate(FieldType[][] table) {
+    public boolean isBlackKingCheckmate(FieldType[][] table) {
         //Bijeli kralj se nalazi na (x,y)
         int x = 0, y = 0;
         boolean found = false;

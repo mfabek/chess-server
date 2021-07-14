@@ -74,6 +74,7 @@ public class ChessController {
             gameEntityRepository.delete(gameEntity);
             GameEntity gameEntity1 = new GameEntity();
             gameEntity1.setPlayerCount(2L);
+            gameEntity1.setFinished(false);
             gameEntity1.setTurn("w");
             gameEntity1.setName(game.get().getName());
             List<ChessBoardEntity> boards = new ArrayList<>();
@@ -133,6 +134,7 @@ public class ChessController {
                     System.out.println("sah mat na bijelom");
                     isCheckmate = true;
                     whoWon = "b";
+                    gameEntity.setFinished(true);
                 }
             }
             if (isBlackKingCheck(temp)) {
@@ -141,6 +143,7 @@ public class ChessController {
                     System.out.println("sah mat na crnom");
                     isCheckmate = true;
                     whoWon = "w";
+                    gameEntity.setFinished(true);
                 }
             }
 
@@ -155,7 +158,7 @@ public class ChessController {
                 }
             }
 
-            if (boardInLastMove.equals(request.getBoard())) {
+            if (boardInLastMove.split(" ")[0].equals(request.getBoard().split(" ")[0])) {
                 //Drugo spremanje iste tablice
                 //Zanemari
                 return movePieceResponse;

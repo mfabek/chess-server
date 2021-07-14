@@ -4,16 +4,15 @@ import com.pmf.chessgame.storage.model.entity.ChessBoardEntity;
 import com.pmf.chessgame.storage.model.entity.GameEntity;
 import com.pmf.chessgame.storage.model.request.MovePieceRequest;
 import com.pmf.chessgame.storage.model.response.MovePieceResponse;
-import com.pmf.chessgame.storage.repository.ChessBoardRepository;
 import com.pmf.chessgame.storage.repository.GameEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
@@ -36,6 +35,21 @@ public class ChessController {
         return 0L;
     }
 
+    @PostMapping("getAllMoves")
+    public List<String> getAllMoves(@RequestBody String name) {
+        Optional<GameEntity> game = gameEntityRepository.findByName(name);
+        List<String> list = new ArrayList<>();
+        if (game.isPresent()) {
+            List<ChessBoardEntity> chessBoardEntityList = game.get().getBoards();
+            chessBoardEntityList.sort((a, b) -> a.getId() < b.getId() ? -1 : 1);
+            for (ChessBoardEntity chessBoardEntity : chessBoardEntityList) {
+                list.add(chessBoardEntity.getBoard());
+            }
+            return list;
+        }
+        return list;
+    }
+
     @PostMapping("getBoard")
     public String getBoard(@RequestBody String name) {
         Optional<GameEntity> game = gameEntityRepository.findByName(name);
@@ -55,7 +69,7 @@ public class ChessController {
     @PostMapping("reset")
     public void reset(@RequestBody String name) {
         Optional<GameEntity> game = gameEntityRepository.findByName(name);
-        if(game.isPresent()) {
+        if (game.isPresent()) {
             GameEntity gameEntity = game.get();
             gameEntityRepository.delete(gameEntity);
             GameEntity gameEntity1 = new GameEntity();

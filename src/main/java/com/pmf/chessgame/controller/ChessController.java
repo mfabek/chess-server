@@ -7,12 +7,13 @@ import com.pmf.chessgame.storage.model.response.MovePieceResponse;
 import com.pmf.chessgame.storage.repository.GameEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
@@ -26,7 +27,8 @@ public class ChessController {
         this.gameEntityRepository = gameEntityRepository;
     }
 
-    @PostMapping("getCount")
+    @MessageMapping("getCount")
+    @SendTo("/topic")
     public Long getPlayersCount(@RequestBody String name) {
         Optional<GameEntity> game = gameEntityRepository.findByName(name);
         if (game.isPresent()) {

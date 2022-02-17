@@ -52,7 +52,8 @@ public class ChessController {
         return list;
     }
 
-    @PostMapping("getBoard")
+    @MessageMapping("getBoard")
+    @SendTo("/topic2")
     public String getBoard(@RequestBody String name) {
         Optional<GameEntity> game = gameEntityRepository.findByName(name);
         String move = "";
